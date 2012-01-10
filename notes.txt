@@ -1,0 +1,209 @@
+HOW THE ORIGINAL mintconstructor.py WORKS
+
+DIALOG BOX 1A: 
+Select existing project or new project.  (Select an existing project, and find your ISO file.)
+
+DIALOG BOX 1B:
+Continue?  This may take a few minutes.  Select yes or no.  (Select yes.)
+
+DIALOG BOX 2A: 
+Open a chroot terminal.  Open a chroot terminal
+
+DIALOG BOX 2B:
+Opens an xterm terminal.  Run the chroot scripts here and exit to return to Dialog Box 2A.
+
+BACK TO DIALOG BOX 2A: Select Back or next.  (Select Next.)
+
+DIALOG BOX 3A:
+Build.  Enter filename and description.  (Make sure the filename isn't too long.)
+
+DIALOG BOX 3B: Build live CD?  Select yes or no.  (Select yes.)
+
+DIALOG BOX 4: Finished?
+
+The end result will be an ISO file in /root .
+
+========================================================================
+pdb observations:
+DIALOG BOX 1A
+Selecting ISO file triggers on_buttonBrowseIsoFilename_clicked
+on_buttonBrowseIsoFilename_clicked lets you select an ISO file
+Waits for you to click Next, which triggers on_buttonNext_clicked -> checkPage
+pageNum == self.pageLiveSetup, self.saveSetupInfo(), 
+Set self.customDir, createNewProject, isoFilename
+
+DIALOG BOX 1B:
+triggered by response = warnDlg.run() in checkPage
+gobject.idle_add(self.setupWorkingDirectory): long wait for copying stuff from the ISO file
+
+DIALOG BOX 2A:
+Triggered somewhere in setupWorkingDirectory, presumably in self.setDefaultCursor()
+Returns to on_buttonNext_clicked function just before self.checkPage(page) and waits for your input
+
+DIALOG BOX 2B
+Clicking on "Open a chroot terminal" triggers on_buttonCustomizeLaunchTerminal_clicked
+/root/root/ on normal env = / in chroot env
+Presumably pauses at os.popen('export HOME=/root ; xterm -bg black -fg white -rightbar -title \"%s\" -e /tmp/reconstructor-terminal.sh' % self.folder)
+to await your response
+Exiting exterm chroot terminal triggers on_buttonCustomizeLaunchTerminal_clicked, returns to DIALOG BOX 2A
+Clicking Next on Dialog Box 2A
+
+Clicking Next triggers on_buttonNext_clicked function, goes to SelfCheckPage, goes to the
+pageNum == self.pageLiveCustomize: section, goes to self.setPage(self.pageLiveBuild)
+calls self.checkEnableBurnIso()
+
+DIALOG BOX 3A:
+Triggered by self.wTree.get_widget("buttonBurnIso").show()
+returns to on_buttonNext_clicked just before "self.checkPage(page)" and waits for your input
+
+Goes to checkPage, goes to "pageNum == self.pageLiveBuild" section
+
+DIALOG BOX 3B:
+Triggered in "pageNum == self.pageLiveBuild" section
+
+Clicking yes triggers def build(self) function
+
+DIALOG BOX 4:
+Triggered in "self.wTree.get_widget("buttonNext").set_label("Finish")"
+
+Clicking Finished triggers "self.on_buttonNext_clicked", leads to "pageNum == self.pageFinish" section
+
+
+
+
+
+
+
+========================================================================
+
+FUNCTION FLOW:
+def __init__(self), functions are called when triggered by events defined in "dic = statement"
+    self.appName = "MintConstructor"        
+    self.mountDir = '/media/cdrom'
+    self.tmpDir = "tmp"
+    self.tmpPackageDir = "tmp_packages"
+    self.customDir = ""
+    self.createNewProject = False        
+    self.isoFilename = ""
+    self.buildLiveCdFilename = ''        
+    self.watch = gtk.gdk.Cursor(gtk.gdk.WATCH)
+    self.working = None
+    self.workingDlg = None        
+    self.interactiveEdit = False
+    self.pageLiveSetup = 0
+    self.pageLiveCustomize = 1
+    self.pageLiveBuild = 2
+    self.pageFinish = 3        
+    self.gnomeBinPath = '/usr/bin/gnome-session'
+    self.f = sys.stdout
+    self.treeModel = None
+    self.treeView = None
+    Create self.mountDir directory if it does not already exist
+    SET currentProject = '/root' if running as root
+    SET iso_name = "Linux Mint <VERSION> <EDITION> <XX>-bit"
+	DIC self.on_buttonNext_clicked
+		CALL self.checkPage(page)
+			IF pageNum == self.pageLiveSetup == 0 (already True)
+				CALL self.saveSetupInfo
+					SET self.customDir = self.wTree.get_widget("entryWorkingDir").get_text() = '/root'
+					SET self.createNewProject = self.wTree.get_widget("radiobutton_new_project").get_active() = True
+					SET self.isoFilename = self.wTree.get_widget("entryIsoFilename").get_text() = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
+				END self.saveSetupInfo
+				SET self.interactiveEdit = False
+				IF self.checkCustomDir() == True
+					self.customDir <> ""
+					Create self.customDir if not already present
+				RETURN True to self.checkCustomDir()
+					IF self.createNewProject == True (already True)
+						IF self.checkWorkingDir(), True
+							self.wTree.get_widget("radiobutton_new_project").get_active() = self.createNewProject = True
+							remasterExists = None
+							rootExists = None
+							workingDirOk = True
+						RETURN workingDirOk, True to self.checkWorkingDir()
+							DIALOG BOX 1B
+							if response == gtk.RESPONSE_OK
+								gobject.idle_add(self.setupWorkingDirectory)
+									# remaster dir
+									IF self.createNewProject == True (already True)
+										IF remaster directory in self.customDir doesn't exist, create it
+										self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
+										IF self.isoFilename <> ""
+											print _("Using ISO for squashfs root...")
+											os.popen('mount -o loop \"' + self.isoFilename + '\" ' + self.mountDir)
+										# copy remaster files
+										# unmount iso/cd-rom
+									# custom root dir
+									IF self.createNewProject == True (already True)
+										IF root directory in self.customDir doesn't exist, create it
+										# check for existing directories and remove if necessary
+										# extract squashfs into custom root
+										# check for iso
+										self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
+										IF self.isoFilename <> ""
+											print _("Using ISO for squashfs root...")
+											os.popen('mount -o loop \"' + self.isoFilename + '\" ' + self.mountDir)
+										# copy remaster files
+										# mount squashfs root
+										# copy squashfs root
+										# umount tmpsquashfs
+										# umount cdrom
+										# remove tmpsquash
+										# set proper permissions - MUST DO WITH UBUNTU
+									print _("Finished setting up working directory...")
+									RETURN False to setupWorkingDirectory(self)
+								gobject.idle_add(self.readyUp)
+									self.setDefaultCursor()
+									self.setPage(self.pageLiveCustomize) =1
+								Return TRUE to self.checkPage(page)
+	END self.on_buttonNext_clicked
+	
+	DIC self.on_buttonNext_clicked
+		CALL self.checkPage(page)
+			elif pageNum == self.pageLiveCustomize == 1 (now 1)
+				filename = d.strftime("dev-%Y%m%d-%H%M") + ".iso"
+				DIALOG BOX 2A
+				iso_name =
+				DIALOG BOX 2B
+				self.setPage(self.pageLiveBuild), 2
+				CALL self.checkEnableBurnIso()
+				END self.checkEnableBurnIso()
+				Return True to self.checkPage(page)
+		END self.checkPage(page)
+	END self.on_buttonNext_clicked
+	
+	DIC self.on_buttonNext_clicked
+		CALL self.checkPage(page)
+			elif pageNum == self.pageLiveBuild, 2
+				DIALOG BOX 3B
+				if response == gtk.RESPONSE_OK:
+					self.setBusyCursor()
+					CALL self.build: gobject.idle_add(self.build)
+						# Update kernel and initrd
+						# Update filesystem.size
+						# check for custom mksquashfs (for multi-threading, new features, etc.)
+						# setup build vars
+						print _("INFO: Starting Build...")
+						# build squash root
+						# build iso
+						self.setDefaultCursor()
+						self.setPage(self.pageFinish), 3
+						# print status message
+						# enable/disable iso burn
+						self.checkEnableBurnIso()
+						print "Build Complete..."
+					END self.build
+					# change Next text to Finish
+					self.wTree.get_widget("buttonNext").set_label("Finish")
+					return True to response
+		END self.checkPage(page)
+	END self.on_buttonNext_clicked
+
+	DIC self.on_buttonNext_clicked
+		CALL self.checkPage(page)
+			# finished... exit
+            print _("Exiting...")
+            gtk.main_quit()
+            sys.exit(0)
+		END self.checkPage(page)
+	END self.on_buttonNext_clicked

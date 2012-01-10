@@ -1,0 +1,39 @@
+PLAN FOR SWIFT LINUX REMASTERING SCRIPT
+
+MAJOR FUNCTIONS TO RETAIN:
+setupWorkingDirectory
+launchTerminal (remove dialog box and xterm, replace with execution of Swift Linux scripts)
+build(self)
+"pageNum == self.pageFinish" section
+
+ADD
+autoDelete
+autoMount
+checkISO
+finish (from "elif pageNum == self.pageFinish:" section of checkPage)
+
+FUNCTIONS TO DELETE:
+__init__(self) starting with "# setup glade widget tree"
+checkCustomDir
+setPage
+setBusyCursor
+setDefaultCursor
+showWorking
+hideWorking
+checkWorkingDir
+checkPage (except elif pageNum == self.pageFinish:" section)
+checkEnableBurnIso
+burnIso
+readyUp
+startInteractiveEdit
+clearInteractiveSettings
+on_buttonBack_clicked
+on_buttonNext_clicked
+on_buttonBrowseWorkingDir_clicked
+on_buttonBrowseIsoFilename_clicked
+on_buttonBrowseLiveCdFilename_clicked
+on_buttonInteractiveEditLaunch_clicked
+on_buttonInteractiveClear_clicked
+on_buttonCustomizeLaunchTerminal_clicked
+on_buttonBurnIso_clicked
+saveSetupInfo

@@ -1,0 +1,7 @@
+cd into the usr_lib_linuxmint_mintConstructor directory
+Enter "sudo python -m pdb mintConstructor.py"
+
+Within pdb:
+l (lower case L): lists lines and points to where you are in the program
+s: continue to the next line
+r: continue through the rest of the current subroutine (useful for intrinsic Python functions)
