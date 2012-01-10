@@ -40,8 +40,7 @@ class Reconstructor:
         self.tmpPackageDir = "tmp_packages"
         # self.customDir = ""
         # self.createNewProject = False        
-        # self.isoFilename = ""
-        self.buildLiveCdFilename = ''        
+        # self.isoFilename = ""       
         self.watch = gtk.gdk.Cursor(gtk.gdk.WATCH)
         self.working = None
         self.workingDlg = None        
@@ -57,12 +56,31 @@ class Reconstructor:
         
         # Variables (for Swift Linux)
         self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
+        print ('self.isoFilename: ' + self.isoFilename)
+        
         self.createNewProject = True
+        print ('self.createNewProject: ' + str(self.createNewProject))
+        
         self.customDir = '/usr/local/bin/swiftconstructor'
+        print ('self.customDir: ' + self.customDir)
+        
+        self.chrootDir = self.customDir + '/custom_root'
+        print ('self.chrootDir: '+ self.chrootDir)
+        
         self.userName = pwd.getpwuid(1000)[0] # username
+        print ('self.userName: ' + self.userName)
+        
         self.swiftSource = '/home/' + self.userName + '/develop'
-        self.swiftDest = self.customDir + '/usr/local/bin/develop'
-        self.isoOutput = '/mnt/host/regular.iso'
+        print ('self.swiftSource: ' + self.swiftSource)
+        
+        self.swiftDest = self.chrootDir + '/usr/local/bin/develop'
+        print ('self.swiftDest: ' + self.swiftDest)
+        
+        self.chrootPrefix = 'chroot '+self.chrootDir+' '
+        print ('self.chrootPrefix: ' + self.chrootPrefix) + '(command)'
+        
+        self.buildLiveCdFilename = '/mnt/host/regular.iso'
+        print ('buildLiveCdFilename: ' + self.buildLiveCdFilename)  
         
         # Automatically mount /mnt/host
         self.auto_mount() 
@@ -85,6 +103,9 @@ class Reconstructor:
         
         # Delete Swift Linux scripts from the chroot environment
         self.deleteSwiftScripts()
+        
+        # Create the Output ISO file
+        self.build()
         
         self.finish() # End of program
 
@@ -115,7 +136,7 @@ class Reconstructor:
             
             if os.path.exists(self.customDir) == True:
                 print ("INFO: Removing old " + self.customDir )
-                shutil.rmtree(self.customDir)
+                os.system ('rm -rf '+self.customDir)
             
             if os.path.exists(os.path.join(self.customDir, "remaster")) == False:
                 print ("INFO: Creating Remaster directory at " + self.customDir )
@@ -158,9 +179,9 @@ class Reconstructor:
         # custom root dir
         if self.createNewProject: # Executed in Swift Linux
 
-            if os.path.exists(os.path.join(self.customDir, "custom_root")) == False:
+            if os.path.exists(self.chrootPrefix) == False:
                 print _("INFO: Creating Custom Root directory...")
-                os.makedirs(os.path.join(self.customDir, "custom_root"))
+                os.makedirs(self.chrootPrefix)
             # check for existing directories and remove if necessary
             if os.path.exists(os.path.join(self.customDir, "tmpsquash")):
                 print _("INFO: Removing existing tmpsquash directory...")
@@ -231,8 +252,8 @@ class Reconstructor:
     # In the chroot environment, the Swift Linux scripts will be at /usr/local/bin/develop
     def copySwiftScripts(self):
         # From earlier:
-        # self.swiftSource = "/home/" + self.userName + "/develop"
-        # self.swiftDest = self.customDir + "/usr/local/bin/develop"
+        # self.swiftSource = '/home/' + self.userName + '/develop'
+        # self.swiftDest = self.chrootDir + '/usr/local/bin/develop'
         print ("BEGIN copying Swift Linux scripts to the chroot environment")
         shutil.copytree (self.swiftSource, self.swiftDest)
         print ("FINISHED copying Swift Linux scripts to the chroot environment")
@@ -242,7 +263,7 @@ class Reconstructor:
     # In the chroot environment, the Swift Linux scripts are at /usr/local/bin/develop
     def deleteSwiftScripts(self):
         # From earlier:
-        # self.swiftDest = self.customDir + "/usr/local/bin/develop"
+        # self.swiftDest = self.chrootDir + '/usr/local/bin/develop'
         print ("BEGIN deleting Swift Linux scripts from the chroot environment")
         shutil.rmtree(self.swiftDest)
         print ("FINISHED deleting Swift Linux scripts from the chroot environment")
@@ -268,11 +289,11 @@ class Reconstructor:
             os.popen('mv -f \"' + os.path.join(self.customDir, "custom_root/etc/wgetrc") + '\" \"' + os.path.join(self.customDir, "custom_root/etc/wgetrc.orig") + '\"')
             os.popen('cp -f /etc/wgetrc ' + os.path.join(self.customDir, "custom_root/etc/wgetrc"))
             
-            # Execute "chroot /usr/local/bin/swiftconstructor/custom_root"
-            # From earlier: self.customDir = "/usr/local/bin/swiftconstructor"
-            os.system('chroot ' + self.customDir + '/custom_root')
-            os.system('sh /usr/local/bin/develop/1-build/shared-regular.sh')
-            os.system('exit')
+            # Execute "chroot /usr/local/bin/swiftconstructor/custom_root" + command
+            # From earlier: self.chrootDir = self.customDir + '/custom_root'
+            # From earlier: self.chrootPrefix = 'chroot '+self.chrootDir+' '
+            
+            os.system(self.chrootPrefix + 'sh /usr/local/bin/develop/1-build/shared-regular.sh')
             
             # restore wgetrc
             print _("Restoring wgetrc configuration...")
@@ -319,6 +340,8 @@ class Reconstructor:
         # Update kernel and initrd
         vmlinuz_filename = commands.getoutput("ls -al %s/root/vmlinuz" % self.customDir).split("/")[-1]
         vmlinuz_path = "%s/root/boot/%s" % (self.customDir, vmlinuz_filename)
+        print ('vmlinuz_filename = ' + vmlinuz_filename)
+        print ('vmlinuz_path = ' + vmlinuz_path)
         if os.path.exists(vmlinuz_path):                
             os.popen("cp %s %s/remaster/casper/vmlinuz" % (vmlinuz_path, self.customDir))
             print "Updating vmlinuz"
@@ -327,6 +350,8 @@ class Reconstructor:
             return
         initrd_filename = commands.getoutput("ls -al %s/root/initrd.img" % self.customDir).split("/")[-1]
         initrd_path = "%s/root/boot/%s" % (self.customDir, initrd_filename)
+        print ('initrd_filename = ' + initrd_filename)
+        print ('initrd_path = ' + initrd_path)
         if os.path.exists(initrd_path):             
             os.popen("cp %s %s/remaster/casper/initrd.lz" % (initrd_path, self.customDir))
             print "Updating initrd"
@@ -343,8 +368,9 @@ class Reconstructor:
             mksquashfs = commands.getoutput('echo $MKSQUASHFS')
             print 'Using alternative mksquashfs: ' + ' Version: ' + commands.getoutput(mksquashfs + ' -version')
         # setup build vars                
-        self.buildLiveCdFilename = self.wTree.get_widget("entryLiveIsoFilename").get_text()
-        self.LiveCdDescription = "Linux Mint"        
+        # self.buildLiveCdFilename = self.wTree.get_widget("entryLiveIsoFilename").get_text()
+        # self.LiveCdDescription = "Linux Mint"        
+        self.LiveCdDescription = "Swift Linux"        
         self.hfsMap = os.getcwd() + "/lib/hfs.map"
 
         print " "
@@ -352,11 +378,11 @@ class Reconstructor:
         print " "
 
         # build squash root                
-        if os.path.exists(os.path.join(self.customDir, "custom_root")):
+        if os.path.exists(os.path.join(self.customDir, "root")):
             print _("Creating SquashFS root...")
             print _("Updating File lists...")
             q = ' dpkg-query -W --showformat=\'${Package} ${Version}\n\' '
-            os.popen('chroot \"' + os.path.join(self.customDir, "custom_root/") + '\"' + q + ' > \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest") + '\"' )
+            os.popen('chroot \"' + os.path.join(self.customDir, "root/") + '\"' + q + ' > \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest") + '\"' )
             os.popen('cp -f \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest") + '\" \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest-desktop") + '\"')
             # check for existing squashfs root
             if os.path.exists(os.path.join(self.customDir, "remaster/casper/filesystem.squashfs")):
@@ -365,9 +391,9 @@ class Reconstructor:
             print _("Building SquashFS root...")
             # check for alternate mksquashfs
             if mksquashfs == '':
-                os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
+                os.system('mksquashfs \"' + os.path.join(self.customDir, "root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             else:
-                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
+                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
 
         # build iso       
         if os.path.exists(os.path.join(self.customDir, "remaster")):
@@ -393,8 +419,6 @@ class Reconstructor:
                 os.popen('rm -Rf \"' + self.buildLiveCdFilename + '\"')
             # build
             # check for description - replace if necessary
-            if self.wTree.get_widget("entryLiveCdDescription").get_text() != "":
-                self.LiveCdDescription = self.wTree.get_widget("entryLiveCdDescription").get_text()
                 
             os.system("echo \"%s\" > %s/iso_name" % (self.LiveCdDescription, self.customDir))
 
@@ -402,25 +426,16 @@ class Reconstructor:
             print _("Building ISO...")
             os.system('genisoimage -o \"' + self.buildLiveCdFilename + '\" -b \"isolinux/isolinux.bin\" -c \"isolinux/boot.cat\" -no-emul-boot -boot-load-size 4 -boot-info-table -V \"' + self.LiveCdDescription + '\" -cache-inodes -r -J -l \"' + os.path.join(self.customDir, "remaster") + '\"')                
 
-        self.setDefaultCursor()
-        self.setPage(self.pageFinish)
         # print status message
         statusMsgFinish = _('     <b>Finished.</b>     ')
         statusMsgISO = _('      <b>Finished.</b> ISO located at: ')
         if os.path.exists(self.buildLiveCdFilename):
             print "ISO Located: " + self.buildLiveCdFilename
-            self.wTree.get_widget("labelBuildComplete").set_text(statusMsgISO + self.buildLiveCdFilename + '     ')
-            self.wTree.get_widget("labelBuildComplete").set_use_markup(True)
-        else:
-            self.wTree.get_widget("labelBuildComplete").set_text(statusMsgFinish)
-            self.wTree.get_widget("labelBuildComplete").set_use_markup(True)
-        # enable/disable iso burn
-        self.checkEnableBurnIso()
 
         print "Build Complete..."
-        if os.path.exists("/usr/bin/aplay"):
-            os.system("/usr/bin/aplay /usr/lib/linuxmint/mintConstructor/done.wav")
-                    
+        return
+        
+    # Finished
     def finish(self):
         # finished... exit
         print ("Exiting...")
