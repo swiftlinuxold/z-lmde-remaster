@@ -172,9 +172,9 @@ class Reconstructor:
         # custom root dir
         if self.createNewProject: # Executed in Swift Linux
 
-            if os.path.exists(self.chrootPrefix) == False:
+            if os.path.exists(self.chrootDir) == False:
                 print _("INFO: Creating Custom Root directory...")
-                os.makedirs(self.chrootPrefix)
+                os.makedirs(self.chrootDir)
             # check for existing directories and remove if necessary
             if os.path.exists(os.path.join(self.customDir, "tmpsquash")):
                 print _("INFO: Removing existing tmpsquash directory...")
