@@ -338,8 +338,8 @@ class Reconstructor:
         #os.popen("rm -rf %s/remaster/casper/*" % self.customDir)
         
         # Update kernel and initrd
-        vmlinuz_filename = commands.getoutput("ls -al %s/root/vmlinuz" % self.customDir).split("/")[-1]
-        vmlinuz_path = "%s/root/boot/%s" % (self.customDir, vmlinuz_filename)
+        vmlinuz_filename = commands.getoutput("ls -al %s/custom_root/vmlinuz" % self.customDir).split("/")[-1]
+        vmlinuz_path = "%s/custom_root/boot/%s" % (self.customDir, vmlinuz_filename)
         print ('vmlinuz_filename = ' + vmlinuz_filename)
         print ('vmlinuz_path = ' + vmlinuz_path)
         if os.path.exists(vmlinuz_path):                
