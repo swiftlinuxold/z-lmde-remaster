@@ -92,18 +92,11 @@ class Reconstructor:
 		# Copies the contents of the ISO file into self.customDir
         self.setupWorkingDirectory()
         
-        # Copy Swift Linux scripts to chroot environment
-        # In the chroot environment, the Swift Linux scripts will be at /usr/local/bin/develop
-        self.copySwiftScripts()
-        
         # launchTerminal function contains chroot
         # Swift Linux bypasses the terminal window
         # chroot command is "chroot /usr/local/bin/swiftconstructor/custom_root/"
         self.goChroot()
-        
-        # Delete Swift Linux scripts from the chroot environment
-        self.deleteSwiftScripts()
-        
+                
         # Create the Output ISO file
         self.build()
         
@@ -289,11 +282,18 @@ class Reconstructor:
             os.popen('mv -f \"' + os.path.join(self.customDir, "custom_root/etc/wgetrc") + '\" \"' + os.path.join(self.customDir, "custom_root/etc/wgetrc.orig") + '\"')
             os.popen('cp -f /etc/wgetrc ' + os.path.join(self.customDir, "custom_root/etc/wgetrc"))
             
+            # Copy Swift Linux scripts to chroot environment
+            # In the chroot environment, the Swift Linux scripts will be at /usr/local/bin/develop
+            self.copySwiftScripts()
+            
             # Execute "chroot /usr/local/bin/swiftconstructor/custom_root" + command
             # From earlier: self.chrootDir = self.customDir + '/custom_root'
             # From earlier: self.chrootPrefix = 'chroot '+self.chrootDir+' '
-            
+                    
             os.system(self.chrootPrefix + 'sh /usr/local/bin/develop/1-build/shared-regular.sh')
+            
+            # Delete Swift Linux scripts from the chroot environment
+            self.deleteSwiftScripts()
             
             # restore wgetrc
             print _("Restoring wgetrc configuration...")
