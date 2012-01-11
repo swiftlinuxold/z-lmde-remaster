@@ -348,8 +348,8 @@ class Reconstructor:
         else:
             print "WARNING: Not updating vmlinuz!!! %s not found!" % vmlinuz_path
             return
-        initrd_filename = commands.getoutput("ls -al %s/root/initrd.img" % self.customDir).split("/")[-1]
-        initrd_path = "%s/root/boot/%s" % (self.customDir, initrd_filename)
+        initrd_filename = commands.getoutput("ls -al %s/custom_root/initrd.img" % self.customDir).split("/")[-1]
+        initrd_path = "%s/custom_root/boot/%s" % (self.customDir, initrd_filename)
         print ('initrd_filename = ' + initrd_filename)
         print ('initrd_path = ' + initrd_path)
         if os.path.exists(initrd_path):             
