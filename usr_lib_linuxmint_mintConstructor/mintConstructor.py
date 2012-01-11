@@ -25,6 +25,24 @@ try:
 except Exception, detail:
     print detail
     sys.exit(1)
+    
+# HOW THIS PROGRAM WORKS
+
+# 1. Set variables
+
+# 2. setupWorkingDirectory
+# 2A.  Copy the live CD files to the /usr/local/bin/swiftconstructor remaster directory.
+# 2B.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
+#      This means that the usual directory structure (/bin to /var) is visible there.
+
+# 3. goChroot
+# 3A.  Set up the chroot environment.
+# 3B.  Copy the Swift Linux scripts to the custom_root directory for chroot access.
+# 3C.  Execute the Swift Linux scripts as chroot.
+# 3D.  Delete the Swift Linux scripts from the custom_root directory.
+# 3E.  Remove the chroot environment.
+
+# 4. build
 
 
 class Reconstructor:
@@ -90,12 +108,12 @@ class Reconstructor:
 			self.get_iso()
 		
 		# Copies the contents of the ISO file into self.customDir
-        self.setupWorkingDirectory()
+        # self.setupWorkingDirectory()
         
         # launchTerminal function contains chroot
         # Swift Linux bypasses the terminal window
         # chroot command is "chroot /usr/local/bin/swiftconstructor/custom_root/"
-        self.goChroot()
+        # self.goChroot()
                 
         # Create the Output ISO file
         self.build()
@@ -158,14 +176,36 @@ class Reconstructor:
                     self.setDefaultCursor()
                     return
             else: # Executed in Swift Linux
-                print _("Using ISO for remastering...")
+                # self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
+                # self.mountDir = '/media/cdrom'
+                # print _("Using ISO for remastering...")
+                print ("=========================")
+                print ("Using ISO for remastering")
+                print ("Accessing the live CD files from the ISO")
+                print ("Please wait...")
                 os.popen('mount -o loop \"' + self.isoFilename + '\" ' + self.mountDir)
 
-            print _("Copying files...")
+            # print _("Copying files...")
+            print ("=============================")
+            print ("Copying the live CD files to " + self.customDir + "/remaster")
+            print ("Please wait...")
+            
 
             # copy remaster files
+            # self.mountDir = '/media/cdrom'
+            # self.customDir = '/usr/local/bin/swiftconstructor'
             os.popen('rsync -at --del ' + self.mountDir + '/ \"' + os.path.join(self.customDir, "remaster") + '\"')
-            print _("Finished copying files...")
+            
+            # Duplicate /remaster directory
+            if os.path.exists(os.path.join(self.customDir, "remaster2")) == True:
+                shutil.rmtree(os.path.join(self.customDir, "remaster2"))
+            #src = self.customDir+'/remaster'
+            #dest = self.swiftDest+'/remaster2'
+            shutil.copytree(self.customDir+'/remaster', self.customDir+'/remaster2')
+            
+            # print _("Finished copying files...")
+            print ("======================================")
+            print ("Finished copying the live CD files to " + self.mountDir + "/remaster2")
 
             # unmount iso/cd-rom
             os.popen("umount " + self.mountDir)
@@ -207,13 +247,18 @@ class Reconstructor:
             else: # Executed in Swift Linux
                 print _("Using ISO for squashfs root...")
                 os.popen('mount -o loop \"' + self.isoFilename + '\" ' + self.mountDir)
+                #os.popen('mount -o loop \"' + self.isoFilename + '\" ' + self.mountDir)
 
             # copy remaster files
             os.mkdir(os.path.join(self.customDir, "tmpsquash"))
-            # mount squashfs root
-            print _("Mounting squashfs...")
+            # mount squashfs root (NOTE the "mount -t" instead of "mount -o")
+            # print _("Mounting squashfs...")
+            print ("Mounting "+self.mountDir+" to tmpsquash...")
             os.popen('mount -t squashfs -o loop ' + self.mountDir + '/casper/filesystem.squashfs \"' + os.path.join(self.customDir, "tmpsquash") + '\"')
-            print _("Extracting squashfs root...")
+            # print _("Extracting squashfs root...")
+            print ("===========================================")
+            print ("Copying files from tmpsquash to custom_root")
+            print ("Please wait...")
 
             # copy squashfs root
             os.popen('rsync -at --del \"' + os.path.join(self.customDir, "tmpsquash") + '\"/ \"' + os.path.join(self.customDir, "custom_root/") + '\"')
@@ -297,16 +342,16 @@ class Reconstructor:
             
             # restore wgetrc
             print _("Restoring wgetrc configuration...")
-            os.popen('mv -f \"' + os.path.join(self.customDir, "root/etc/wgetrc.orig") + '\" \"' + os.path.join(self.customDir, "root/etc/wgetrc") + '\"')
+            os.popen('mv -f \"' + os.path.join(self.customDir, "custom_root/etc/wgetrc.orig") + '\" \"' + os.path.join(self.customDir, "custom_root/etc/wgetrc") + '\"')
             # remove apt.conf
             #print _("Removing apt.conf configuration...")
             #os.popen('rm -Rf \"' + os.path.join(self.customDir, "root/etc/apt/apt.conf") + '\"')
             # remove dns info
             print _("Removing DNS info...")
-            os.popen('rm -Rf \"' + os.path.join(self.customDir, "root/etc/resolv.conf") + '\"')
+            os.popen('rm -Rf \"' + os.path.join(self.customDir, "custom_root/etc/resolv.conf") + '\"')
             # umount /proc
             print _("Umounting /proc...")
-            os.popen('umount \"' + os.path.join(self.customDir, "root/proc/") + '\"')
+            os.popen('umount \"' + os.path.join(self.customDir, "custom_root/proc/") + '\"')
 
         except Exception, detail: # Not used in Swift Linux
             # restore settings
@@ -340,7 +385,9 @@ class Reconstructor:
         # Update kernel and initrd
         vmlinuz_filename = commands.getoutput("ls -al %s/custom_root/vmlinuz" % self.customDir).split("/")[-1]
         vmlinuz_path = "%s/custom_root/boot/%s" % (self.customDir, vmlinuz_filename)
-        print ('vmlinuz_filename = ' + vmlinuz_filename)
+        # vmlinuz_filename =  vmlinuz-2.6.39-2-486
+        # vmlinuz_path = /usr/local/bin/swiftconstructor/custom_root/boot/vmlinuz-2.6.39-2-486
+        print ('\nvmlinuz_filename = ' + vmlinuz_filename) 
         print ('vmlinuz_path = ' + vmlinuz_path)
         if os.path.exists(vmlinuz_path):                
             os.popen("cp %s %s/remaster/casper/vmlinuz" % (vmlinuz_path, self.customDir))
@@ -348,6 +395,8 @@ class Reconstructor:
         else:
             print "WARNING: Not updating vmlinuz!!! %s not found!" % vmlinuz_path
             return
+        # initrd_filename = initrd.img-2.6.39-2-486
+        # initrd_path = /usr/local/bin/swiftconstructor/custom_root/boot/initrd.img-2.6.39-2-486
         initrd_filename = commands.getoutput("ls -al %s/custom_root/initrd.img" % self.customDir).split("/")[-1]
         initrd_path = "%s/custom_root/boot/%s" % (self.customDir, initrd_filename)
         print ('initrd_filename = ' + initrd_filename)
@@ -360,7 +409,7 @@ class Reconstructor:
             return
         
         #Update filesystem.size
-        os.popen("du -b %(directory)s/root/ 2> /dev/null | tail -1 | awk {'print $1;'} > %(directory)s/remaster/casper/filesystem.size" % {'directory':self.customDir})
+        os.popen("du -b %(directory)s/custom_root/ 2> /dev/null | tail -1 | awk {'print $1;'} > %(directory)s/remaster/casper/filesystem.size" % {'directory':self.customDir})
                 
         # check for custom mksquashfs (for multi-threading, new features, etc.)
         mksquashfs = ''
@@ -378,11 +427,11 @@ class Reconstructor:
         print " "
 
         # build squash root                
-        if os.path.exists(os.path.join(self.customDir, "root")):
+        if os.path.exists(os.path.join(self.customDir, "custom_root")):
             print _("Creating SquashFS root...")
             print _("Updating File lists...")
             q = ' dpkg-query -W --showformat=\'${Package} ${Version}\n\' '
-            os.popen('chroot \"' + os.path.join(self.customDir, "root/") + '\"' + q + ' > \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest") + '\"' )
+            os.popen('chroot \"' + os.path.join(self.customDir, "custom_root/") + '\"' + q + ' > \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest") + '\"' )
             os.popen('cp -f \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest") + '\" \"' + os.path.join(self.customDir, "remaster/casper/filesystem.manifest-desktop") + '\"')
             # check for existing squashfs root
             if os.path.exists(os.path.join(self.customDir, "remaster/casper/filesystem.squashfs")):
@@ -391,9 +440,9 @@ class Reconstructor:
             print _("Building SquashFS root...")
             # check for alternate mksquashfs
             if mksquashfs == '':
-                os.system('mksquashfs \"' + os.path.join(self.customDir, "root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
+                os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             else:
-                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
+                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
 
         # build iso       
         if os.path.exists(os.path.join(self.customDir, "remaster")):
@@ -402,7 +451,7 @@ class Reconstructor:
             os.system("/usr/lib/linuxmint/mintConstructor/updateManifest.sh " + self.customDir)
             # update md5
             print _("Updating md5 sums...")
-            os.system('rm ' + os.path.join(self.customDir, "remaster/") + ' md5sum.txt')
+            os.system('rm ' + os.path.join(self.customDir, "remaster/") + 'md5sum.txt')
             os.popen('cd \"' + os.path.join(self.customDir, "remaster/") + '\"; ' + 'find . -type f -print0 | xargs -0 md5sum > md5sum.txt')
             #Remove md5sum.txt from md5sum.txt
             os.system("sed -e '/md5sum.txt/d' " + os.path.join(self.customDir, "remaster/") + "md5sum.txt > " + os.path.join(self.customDir, "remaster/") + "md5sum.new")
@@ -424,6 +473,8 @@ class Reconstructor:
 
             # build iso according to architecture                
             print _("Building ISO...")
+            
+            # GENERATES THE OUTPUT ISO FILE
             os.system('genisoimage -o \"' + self.buildLiveCdFilename + '\" -b \"isolinux/isolinux.bin\" -c \"isolinux/boot.cat\" -no-emul-boot -boot-load-size 4 -boot-info-table -V \"' + self.LiveCdDescription + '\" -cache-inodes -r -J -l \"' + os.path.join(self.customDir, "remaster") + '\"')                
 
         # print status message
