@@ -1,0 +1,5 @@
+The installer should create a new ISO file from the base Linux Mint Debian Edition ISO file AUTOMATICALLY.  The user only has to intervene in the very beginning, to provide the sudo password, the password for downloading repositories, and to copy the Linux Mint ISO to the guest directory of the host system.
+
+The changes from Linux Mint to Swift Linux should be reflected in the ISO produced.
+
+When booting up, the Linux Mint splash screen should be replaced, and the GRUB menu should show Swift Linux instead of Linux Mint.
