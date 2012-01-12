@@ -31,19 +31,25 @@ except Exception, detail:
 # 1. Set variables
 
 # 2. setupWorkingDirectory
-# 2A.  Copy the live CD files to the /usr/local/bin/swiftconstructor remaster directory.
+# 2A.  Copy the live CD files to the /usr/local/bin/swiftconstructor/remaster directory.
 # 2B.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
 #      This means that the usual directory structure (/bin to /var) is visible there.
 
 # 3. goChroot
 # 3A.  Set up the chroot environment.
 # 3B.  Copy the Swift Linux scripts to the custom_root directory for chroot access.
-# 3C.  Execute the Swift Linux scripts as chroot.
+# 3C.  Execute the Swift Linux scripts as chroot.  This changes the contents of
+#      /usr/local/bin/swiftconstructor/custom_root .
 # 3D.  Delete the Swift Linux scripts from the custom_root directory.
 # 3E.  Remove the chroot environment.
 
 # 4. build
-
+# 4A.  mksquashfs updates /usr/local/bin/swiftconstructor/remaster to reflect changes
+#      made to /usr/local/bin/swiftconstructor/custom_root  in goChroot.
+# 4B.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
+#      to reflect changes made to the live CD files in step 4A.
+# 4C.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
+#      (This is the reverse of step 2A.)
 
 class Reconstructor:
 
@@ -108,12 +114,12 @@ class Reconstructor:
 			self.get_iso()
 		
 		# Copies the contents of the ISO file into self.customDir
-        # self.setupWorkingDirectory()
+        self.setupWorkingDirectory()
         
         # launchTerminal function contains chroot
         # Swift Linux bypasses the terminal window
         # chroot command is "chroot /usr/local/bin/swiftconstructor/custom_root/"
-        # self.goChroot()
+        self.goChroot()
                 
         # Create the Output ISO file
         self.build()
@@ -196,12 +202,12 @@ class Reconstructor:
             # self.customDir = '/usr/local/bin/swiftconstructor'
             os.popen('rsync -at --del ' + self.mountDir + '/ \"' + os.path.join(self.customDir, "remaster") + '\"')
             
-            # Duplicate /remaster directory
-            if os.path.exists(os.path.join(self.customDir, "remaster2")) == True:
-                shutil.rmtree(os.path.join(self.customDir, "remaster2"))
+            #Duplicate /remaster directory
+            #if os.path.exists(os.path.join(self.customDir, "remaster2")) == True:
+                #shutil.rmtree(os.path.join(self.customDir, "remaster2"))
             #src = self.customDir+'/remaster'
             #dest = self.swiftDest+'/remaster2'
-            shutil.copytree(self.customDir+'/remaster', self.customDir+'/remaster2')
+            #shutil.copytree(self.customDir+'/remaster', self.customDir+'/remaster2')
             
             # print _("Finished copying files...")
             print ("======================================")
@@ -379,6 +385,8 @@ class Reconstructor:
 
 # ---------- Build ---------- #
     def build(self):
+        # 4A.  mksquashfs updates /usr/local/bin/swiftconstructor/remaster to reflect changes in
+        #      made to /usr/local/bin/swiftconstructor/custom_root  in goChroot.
         # Clean remaster/casper directory
         #os.popen("rm -rf %s/remaster/casper/*" % self.customDir)
         
@@ -444,6 +452,8 @@ class Reconstructor:
             else:
                 os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
 
+        # 4B.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
+        #      to reflect changes made to the live CD files in step 4A.
         # build iso       
         if os.path.exists(os.path.join(self.customDir, "remaster")):
             print _("Creating ISO...")
@@ -470,6 +480,9 @@ class Reconstructor:
             # check for description - replace if necessary
                 
             os.system("echo \"%s\" > %s/iso_name" % (self.LiveCdDescription, self.customDir))
+
+            # 4C.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
+            #      (This is the reverse of step 2A.)
 
             # build iso according to architecture                
             print _("Building ISO...")
