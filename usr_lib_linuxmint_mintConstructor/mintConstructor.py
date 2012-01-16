@@ -211,7 +211,7 @@ class Reconstructor:
             
             # print _("Finished copying files...")
             print ("======================================")
-            print ("Finished copying the live CD files to " + self.mountDir + "/remaster2")
+            print ("Finished copying the live CD files to " + self.mountDir + "/remaster")
 
             # unmount iso/cd-rom
             os.popen("umount " + self.mountDir)
