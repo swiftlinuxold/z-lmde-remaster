@@ -107,13 +107,14 @@ class Reconstructor:
         print ('buildLiveCdFilename: ' + self.buildLiveCdFilename)  
         
         # Automatically mount /mnt/host
-        self.auto_mount() 
+        # self.auto_mount() 
         
         # If the base ISO file cannot be found, 
-        while os.path.exists(self.isoFilename) == False:
-			self.get_iso()
+        # while os.path.exists(self.isoFilename) == False:
+			# self.get_iso()
 		
-		# Copies the contents of the ISO file into self.customDir
+        print ("Ready to work with " + self.isoFilename)
+        # Copies the contents of the ISO file into self.customDir
         self.setupWorkingDirectory()
         
         # launchTerminal function contains chroot

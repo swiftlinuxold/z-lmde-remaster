@@ -12,6 +12,9 @@ fi
 UNAME=$(awk -v val=1000 -F ":" '$3==val{print $1}' /etc/passwd)
 DIR_DEVELOP=/home/$UNAME/develop
 
+echo "======================="
+echo "REMASTERING SWIFT LINUX"
+
 # Obtain MintConstructor, the package for creating the Linux Mint ISO file
 apt-get install -y mintconstructor 
 
@@ -21,3 +24,6 @@ cp $FILE1 $FILE2
 chmod a+x $FILE2
 
 python $FILE2
+
+echo "FINISHED REMASTERING SWIFT LINUX"
+echo "================================"
