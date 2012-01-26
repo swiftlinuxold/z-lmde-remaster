@@ -46,9 +46,10 @@ except Exception, detail:
 # 4. build
 # 4A.  mksquashfs updates /usr/local/bin/swiftconstructor/remaster to reflect changes
 #      made to /usr/local/bin/swiftconstructor/custom_root  in goChroot.
-# 4B.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
+# 4B.  Update isolinux/isolinux.cfg and splash.jpg within /usr/local/bin/swiftconstructor/remaster
+# 4C.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
 #      to reflect changes made to the live CD files in step 4A.
-# 4C.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
+# 4D.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
 #      (This is the reverse of step 2A.)
 
 class Reconstructor:
@@ -452,8 +453,19 @@ class Reconstructor:
                 os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             else:
                 os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
-
-        # 4B.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
+        # 4B.  Update isolinux/isolinux.cfg and isolinux/splash.jpg within /usr/local/bin/swiftconstructor/remaster
+        if os.path.exists(os.path.join(self.customDir, "remaster")):
+            # self.swiftSource = '/home/' + self.userName + '/develop'
+            src = self.swiftSource + '/remaster/isolinux/isolinux.cfg'
+            # self.customDir = '/usr/local/bin/swiftconstructor'
+            dest = self.customDir + '/remaster/isolinux/isolinux.cfg'
+            shutil.copyfile (src, dest)
+            
+            src = self.swiftSource + '/remaster/isolinux/splash.jpg'
+            dest = self.customDir + '/remaster/isolinux/splash.jpg'
+            shutil.copyfile (src, dest)
+        
+        # 4C.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
         #      to reflect changes made to the live CD files in step 4A.
         # build iso       
         if os.path.exists(os.path.join(self.customDir, "remaster")):
@@ -482,7 +494,7 @@ class Reconstructor:
                 
             os.system("echo \"%s\" > %s/iso_name" % (self.LiveCdDescription, self.customDir))
 
-            # 4C.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
+            # 4D.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
             #      (This is the reverse of step 2A.)
 
             # build iso according to architecture                
