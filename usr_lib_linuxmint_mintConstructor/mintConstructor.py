@@ -215,10 +215,7 @@ class Reconstructor:
             # print _("Finished copying files...")
             print ("======================================")
             print ("Finished copying the live CD files to " + self.mountDir + "/remaster")
-
-            # unmount iso/cd-rom
-            os.popen("umount " + self.mountDir)
-        
+            
             # 2B.  Update isolinux/isolinux.cfg and isolinux/splash.jpg within /usr/local/bin/swiftconstructor/remaster
             # self.swiftSource = '/home/' + self.userName + '/develop'
             src = self.swiftSource + '/remaster/isolinux/isolinux.cfg'
@@ -229,6 +226,9 @@ class Reconstructor:
             src = self.swiftSource + '/remaster/isolinux/splash.jpg'
             dest = self.customDir + '/remaster/isolinux/splash.jpg'
             shutil.copyfile (src, dest)
+
+            # unmount iso/cd-rom
+            os.popen("umount " + self.mountDir)
         
         # 2C.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
         #      This means that the usual directory structure (/bin to /var) is visible there.
