@@ -221,11 +221,15 @@ class Reconstructor:
             src = self.swiftSource + '/remaster/isolinux/isolinux.cfg'
             # self.customDir = '/usr/local/bin/swiftconstructor'
             dest = self.customDir + '/remaster/isolinux/isolinux.cfg'
+            os.system ('chmod +w ' + dest) # Make writable
             shutil.copyfile (src, dest)
+            os.system ('chmod 555 ' + dest) # Back to the original permissions
             
             src = self.swiftSource + '/remaster/isolinux/splash.jpg'
             dest = self.customDir + '/remaster/isolinux/splash.jpg'
+            os.system ('chmod +w ' + dest) # Make writable
             shutil.copyfile (src, dest)
+            os.system ('chmod 555 ' + dest) # Back to the original permissions
 
             # unmount iso/cd-rom
             os.popen("umount " + self.mountDir)
