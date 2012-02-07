@@ -52,6 +52,12 @@ except Exception, detail:
 # 4C.  Transform the contents of /usr/local/bin/swiftconstructor/remaster into an ISO file.
 #      (This is the reverse of step 2A.)
 
+# Replace text in a file        
+def change_text (filename, text_old, text_new):
+    text=open(filename, 'r').read()
+    text = text.replace(text_old, text_new)
+    open(filename, "w").write(text)
+
 class Reconstructor:
 
     def __init__(self):
@@ -144,12 +150,6 @@ class Reconstructor:
         raw_input ("Press Enter to continue")
         self.auto_mount()
         return
-        
-# Replace text in a file        
-def change_text (filename, text_old, text_new):
-    text=open(filename, 'r').read()
-    text = text.replace(text_old, text_new)
-    open(filename, "w").write(text)
 
 # ---------- Setup ---------- #
     def setupWorkingDirectory(self):
