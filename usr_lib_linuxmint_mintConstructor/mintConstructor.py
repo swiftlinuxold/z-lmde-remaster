@@ -32,9 +32,9 @@ except Exception, detail:
 
 # 2. setupWorkingDirectory
 # 2A.  Copy the live CD files to the /usr/local/bin/swiftconstructor/remaster directory.
-# 2B.  Update isolinux/isolinux.cfg and splash.jpg within /usr/local/bin/swiftconstructor/remaster
-# 2C.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
+# 2B.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
 #      This means that the usual directory structure (/bin to /var) is visible there.
+# 2C.  Update isolinux/isolinux.cfg and splash.jpg within /usr/local/bin/swiftconstructor/remaster
 
 # 3. goChroot
 # 3A.  Set up the chroot environment.
@@ -118,6 +118,8 @@ class Reconstructor:
         # Copies the contents of the ISO file into self.customDir
         self.setupWorkingDirectory()
         
+        self.update_isolinux()
+        
         # launchTerminal function contains chroot
         # Swift Linux bypasses the terminal window
         # chroot command is "chroot /usr/local/bin/swiftconstructor/custom_root/"
@@ -142,6 +144,12 @@ class Reconstructor:
         raw_input ("Press Enter to continue")
         self.auto_mount()
         return
+        
+# Replace text in a file        
+def change_text (filename, text_old, text_new):
+    text=open(filename, 'r').read()
+    text = text.replace(text_old, text_new)
+    open(filename, "w").write(text)
 
 # ---------- Setup ---------- #
     def setupWorkingDirectory(self):
@@ -215,26 +223,11 @@ class Reconstructor:
             # print _("Finished copying files...")
             print ("======================================")
             print ("Finished copying the live CD files to " + self.mountDir + "/remaster")
-            
-            # 2B.  Update isolinux/isolinux.cfg and isolinux/splash.jpg within /usr/local/bin/swiftconstructor/remaster
-            # self.swiftSource = '/home/' + self.userName + '/develop'
-            src = self.swiftSource + '/remaster/isolinux/isolinux.cfg'
-            # self.customDir = '/usr/local/bin/swiftconstructor'
-            dest = self.customDir + '/remaster/isolinux/isolinux.cfg'
-            os.system ('chmod +w ' + dest) # Make writable
-            shutil.copyfile (src, dest)
-            os.system ('chmod 555 ' + dest) # Back to the original permissions
-            
-            src = self.swiftSource + '/remaster/isolinux/splash.jpg'
-            dest = self.customDir + '/remaster/isolinux/splash.jpg'
-            os.system ('chmod +w ' + dest) # Make writable
-            shutil.copyfile (src, dest)
-            os.system ('chmod 555 ' + dest) # Back to the original permissions
 
             # unmount iso/cd-rom
             os.popen("umount " + self.mountDir)
         
-        # 2C.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
+        # 2B.  Install the contents of the booted-up live CD to /usr/local/bin/swiftconstructor/custom_root.
         #      This means that the usual directory structure (/bin to /var) is visible there.
         # custom root dir
         if self.createNewProject: # Executed in Swift Linux
@@ -312,6 +305,21 @@ class Reconstructor:
         print _("Finished setting up working directory...")
         print " "
         return False
+        
+    def update_isolinux(self):
+		# 2C.  Update isolinux/isolinux.cfg and remove isolinux/splash.jpg within /usr/local/bin/swiftconstructor/remaster
+		
+        file_splash = self.customDir + '/remaster/isolinux/splash.jpg'
+        os.remove (file_splash)
+		
+        file_isolinux = self.customDir + '/remaster/isolinux/isolinux.cfg'
+        os.system ('chmod +w ' + file_isolinux) # Make writable
+        change_text (file_isolinux, 'Linux Mint Gnome 32-bit (201109)', 'Swift Linux')
+        change_text (file_isolinux, 'Linux Mint', 'Swift Linux')
+        change_text (file_isolinux, 'menu background splash.jpg', '')
+        os.system ('chmod 555 ' + file_isolinux) # Back to the original permissions
+		
+        return
 
     # Copy Swift Linux scripts to chroot environment
     # In the chroot environment, the Swift Linux scripts will be at /usr/local/bin/develop
