@@ -317,6 +317,7 @@ class Reconstructor:
         change_text (file_isolinux, 'Linux Mint Gnome 32-bit (201109)', 'Swift Linux')
         change_text (file_isolinux, 'Linux Mint', 'Swift Linux')
         change_text (file_isolinux, 'menu background splash.jpg', '')
+        change_text (file_isolinux, 'DVD', 'CD')
         os.system ('chmod 555 ' + file_isolinux) # Back to the original permissions
 		
         return
