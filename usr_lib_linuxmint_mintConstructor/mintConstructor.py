@@ -310,7 +310,7 @@ class Reconstructor:
 		# 2C.  Update isolinux/isolinux.cfg and remove isolinux/splash.jpg within /usr/local/bin/swiftconstructor/remaster
 		
         file_splash = self.customDir + '/remaster/isolinux/splash.jpg'
-        os.remove (file_splash)
+        os.system ('rm ' + file_splash)
 		
         file_isolinux = self.customDir + '/remaster/isolinux/isolinux.cfg'
         os.system ('chmod +w ' + file_isolinux) # Make writable
