@@ -371,7 +371,7 @@ class Reconstructor:
             # From earlier: self.chrootDir = self.customDir + '/custom_root'
             # From earlier: self.chrootPrefix = 'chroot '+self.chrootDir+' '
                     
-            os.system(self.chrootPrefix + 'sh /usr/local/bin/develop/1-build/shared-regular.sh')
+            os.system(self.chrootPrefix + 'python /usr/local/bin/develop/1-build/shared-regular.py')
             
             # Delete Swift Linux scripts from the chroot environment
             self.deleteSwiftScripts()
