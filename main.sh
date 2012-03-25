@@ -23,7 +23,5 @@ FILE2=/usr/lib/linuxmint/mintConstructor/mintConstructor.py
 cp $FILE1 $FILE2
 chmod a+x $FILE2
 
-python $FILE2
-
 echo "FINISHED REMASTERING SWIFT LINUX"
 echo "================================"

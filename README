@@ -1,2 +1,5 @@
 This is the repository dedicated to the process of transforming the LMDE ISO file into
 the Regular Swift Linux ISO file.
+
+Please note that the main.sh script changes /usr/lib/linuxmint/mintConstructor/mintConstructor.py
+but does NOT execute it.  The execution of this script is left to the build scripts.
