@@ -12,8 +12,8 @@ fi
 UNAME=$(awk -v val=1000 -F ":" '$3==val{print $1}' /etc/passwd)
 DIR_DEVELOP=/home/$UNAME/develop
 
-echo "======================="
-echo "REMASTERING SWIFT LINUX"
+echo "===================================="
+echo "CHANGING THE LMDE REMASTERING SCRIPT"
 
 # Obtain MintConstructor, the package for creating the Linux Mint ISO file
 apt-get install -y mintconstructor 
@@ -23,5 +23,5 @@ FILE2=/usr/lib/linuxmint/mintConstructor/mintConstructor.py
 cp $FILE1 $FILE2
 chmod a+x $FILE2
 
-echo "FINISHED REMASTERING SWIFT LINUX"
-echo "================================"
+echo "FINISHED CHANGING THE LMDE REMASTERING SWIFT LINUX"
+echo "=================================================="

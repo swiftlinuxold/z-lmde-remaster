@@ -138,7 +138,6 @@ class Reconstructor:
 
 # Automatically mount /mnt/host
     def auto_mount(self):
-        os.system ("umount -t vboxsf guest /mnt/host")
         os.system ("mount -t vboxsf guest /mnt/host")
         return
         
