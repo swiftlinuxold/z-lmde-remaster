@@ -414,7 +414,7 @@ class Reconstructor:
 
 # ---------- Build ---------- #
     def build(self):
-        # 4A.  mksquashfs updates /usr/local/bin/swiftconstructor/remaster to reflect changes in
+        # 4A.  mksquashfs updates /usr/local/bin/swiftconstructor/remaster to reflect changes
         #      made to /usr/local/bin/swiftconstructor/custom_root  in goChroot.
         # Clean remaster/casper directory
         #os.popen("rm -rf %s/remaster/casper/*" % self.customDir)
@@ -476,10 +476,8 @@ class Reconstructor:
                 os.popen('rm -Rf \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             print _("Building SquashFS root...")
             # check for alternate mksquashfs
-            # Suppress the progress bar, which makes the log file several MB in size
-            print ("NOTE: The mksquashfs process is about to begin.  It will take a LONG time to finish.")
             if mksquashfs == '':
-                os.system('mksquashfs -no-progress \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
+                os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             else:
                 os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
         
