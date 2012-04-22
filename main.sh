@@ -23,5 +23,5 @@ FILE2=/usr/lib/linuxmint/mintConstructor/mintConstructor.py
 cp $FILE1 $FILE2
 chmod a+x $FILE2
 
-echo "FINISHED CHANGING THE LMDE REMASTERING SWIFT LINUX"
-echo "=================================================="
+echo "FINISHED CHANGING THE LMDE REMASTERING SCRIPT"
+echo "============================================="
