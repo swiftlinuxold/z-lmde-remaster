@@ -192,7 +192,6 @@ class Reconstructor:
                     self.setDefaultCursor()
                     return
             else: # Executed in Swift Linux
-                # self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
                 # self.mountDir = '/media/cdrom'
                 # print _("Using ISO for remastering...")
                 print ("=========================")
@@ -313,7 +312,7 @@ class Reconstructor:
 		
         file_isolinux = self.customDir + '/remaster/isolinux/isolinux.cfg'
         os.system ('chmod +w ' + file_isolinux) # Make writable
-        change_text (file_isolinux, 'Linux Mint Gnome 32-bit (201109)', 'Swift Linux')
+        change_text (file_isolinux, 'Linux Mint MATE/Cinnamon 32-bit (201204)', 'Swift Linux')
         change_text (file_isolinux, 'Linux Mint', 'Swift Linux')
         change_text (file_isolinux, 'menu background splash.jpg', '')
         change_text (file_isolinux, 'DVD', 'CD')
