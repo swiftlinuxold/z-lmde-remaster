@@ -1,7 +1,7 @@
 CHANGES TO MAKE TO THE mintConstructor.py SCRIPT:
 
 *  Use the fldiff program to compare mintConstructor.py from the new version of LMDE to that of the old version of LMDE.
-Then make these changes to the version of mintConstructor.py used for the previous Swift Linux release.
+Then make these changes to the version of mintConstructor.py used for the previous Swift Linux release.  NOTE: You may need to change some instances of 'root' to 'custom_root'.
 
 *  Update the self.isoFilename value.
 

@@ -497,16 +497,12 @@ class Reconstructor:
                 os.popen('rm -Rf \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             print _("Building SquashFS root...")
             # check for alternate mksquashfs
-            command_mksquashfs = ''
-            if mksquashfs == '':
-                # os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
-                command_mksquashfs = 'mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"'
-            else:
-                # os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
-                command_mksquashfs = mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"'
             os.system ('echo The mksquashfs process takes a LONG time.')
             os.system ('echo Please note that the screen output is suppressed due to overwhelming volume.')
-            os.system (command_mksquashfs + ' >> /dev/null') # Suppresses the screen output (necessary due to overwhelming volume)
+            if mksquashfs == '':                
+                os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" -comp xz >> /dev/null')
+            else:
+                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" >> /dev/null')
             os.system ('echo The mksquashfs process has now been completed.')
         
         # 4B.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
