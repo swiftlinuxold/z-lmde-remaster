@@ -86,7 +86,7 @@ class Reconstructor:
         self.treeView = None
         
         # Variables (for Swift Linux)
-        self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
+        self.isoFilename = '/mnt/host/linuxmint-201204-mate-cinnamon-dvd-32bit.iso'
         print ('self.isoFilename: ' + self.isoFilename)
         
         self.createNewProject = True
