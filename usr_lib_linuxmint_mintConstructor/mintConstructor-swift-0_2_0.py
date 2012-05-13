@@ -10,7 +10,6 @@ import re
 import commands
 import datetime
 import pwd # Needed to obtain username (not root)
-import tempfile
 
 try:
     import pygtk
@@ -87,7 +86,7 @@ class Reconstructor:
         self.treeView = None
         
         # Variables (for Swift Linux)
-        self.isoFilename = '/mnt/host/linuxmint-201204-mate-cinnamon-dvd-32bit.iso'
+        self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
         print ('self.isoFilename: ' + self.isoFilename)
         
         self.createNewProject = True
@@ -193,6 +192,7 @@ class Reconstructor:
                     self.setDefaultCursor()
                     return
             else: # Executed in Swift Linux
+                # self.isoFilename = '/mnt/host/linuxmint-201109-gnome-dvd-32bit.iso'
                 # self.mountDir = '/media/cdrom'
                 # print _("Using ISO for remastering...")
                 print ("=========================")
@@ -313,7 +313,7 @@ class Reconstructor:
 		
         file_isolinux = self.customDir + '/remaster/isolinux/isolinux.cfg'
         os.system ('chmod +w ' + file_isolinux) # Make writable
-        change_text (file_isolinux, 'Linux Mint MATE/Cinnamon 32-bit (201204)', 'Swift Linux')
+        change_text (file_isolinux, 'Linux Mint Gnome 32-bit (201109)', 'Swift Linux')
         change_text (file_isolinux, 'Linux Mint', 'Swift Linux')
         change_text (file_isolinux, 'menu background splash.jpg', '')
         change_text (file_isolinux, 'DVD', 'CD')
@@ -427,8 +427,8 @@ class Reconstructor:
         print ('\nvmlinuz_filename = ' + vmlinuz_filename) 
         print ('vmlinuz_path = ' + vmlinuz_path)
         if os.path.exists(vmlinuz_path):                
-            print "Updating vmlinuz"
             os.popen("cp %s %s/remaster/casper/vmlinuz" % (vmlinuz_path, self.customDir))
+            print "Updating vmlinuz"
         else:
             print "WARNING: Not updating vmlinuz!!! %s not found!" % vmlinuz_path
             return
@@ -439,29 +439,8 @@ class Reconstructor:
         print ('initrd_filename = ' + initrd_filename)
         print ('initrd_path = ' + initrd_path)
         if os.path.exists(initrd_path):             
+            os.popen("cp %s %s/remaster/casper/initrd.lz" % (initrd_path, self.customDir))
             print "Updating initrd"
-            os.popen("mkdir -p %s/remaster/.disk" % self.customDir)
-            os.popen("rm -rf %s/remaster/.disk/*uuid*" % self.customDir)
-            tempdir = tempfile.mkdtemp()
-            cwd = commands.getoutput("pwd")
-            os.chdir(tempdir)
-            if "gzip" in commands.getoutput("file %s" % initrd_path).lower():
-                os.popen("cp %s %s/remaster/casper/initrd.gz" % (initrd_path, self.customDir))                        
-                os.popen("gzip -cd \"%s/remaster/casper/initrd.gz\" -S \".gz\" | cpio -id" % self.customDir)
-                os.popen("uuidgen -r > conf/uuid.conf")                
-                os.popen("find . | cpio --quiet --dereference -o -H newc | gzip -9c > \"%s/remaster/casper/initrd.gz\"" % self.customDir)            
-                os.popen("cp conf/uuid.conf %s/remaster/.disk/casper-uuid-generic" % self.customDir)
-                os.popen("cp conf/uuid.conf %s/remaster/.disk/live-uuid-generic" % self.customDir)               
-                os.popen("mv %s/remaster/casper/initrd.gz %s/remaster/casper/initrd.lz" % (self.customDir, self.customDir))                
-            else:
-                os.popen("cp %s %s/remaster/casper/initrd.lz" % (initrd_path, self.customDir))                
-                os.popen("lzma -cd \"%s/remaster/casper/initrd.lz\" -S \".lz\" | cpio -id" % self.customDir)
-                os.popen("uuidgen -r > conf/uuid.conf")                
-                os.popen("find . | cpio --quiet --dereference -o -H newc | lzma -9c > \"%s/remaster/casper/initrd.lz\"" % self.customDir)            
-                os.popen("cp conf/uuid.conf %s/remaster/.disk/casper-uuid-generic" % self.customDir)
-                os.popen("cp conf/uuid.conf %s/remaster/.disk/live-uuid-generic" % self.customDir)
-            os.chdir(cwd)
-            shutil.rmtree(tempdir)
         else:
             print "WARNING: Not updating initrd!!! %s not found!" % initrd_path
             return
@@ -546,9 +525,6 @@ class Reconstructor:
             
             # GENERATES THE OUTPUT ISO FILE
             os.system('genisoimage -o \"' + self.buildLiveCdFilename + '\" -b \"isolinux/isolinux.bin\" -c \"isolinux/boot.cat\" -no-emul-boot -boot-load-size 4 -boot-info-table -V \"' + self.LiveCdDescription + '\" -cache-inodes -r -J -l \"' + os.path.join(self.customDir, "remaster") + '\"')                
-
-            print _("Making Hybrid ISO...")
-            os.system('isohybrid \"' + self.buildLiveCdFilename + '\"')
 
         # print status message
         statusMsgFinish = _('     <b>Finished.</b>     ')
