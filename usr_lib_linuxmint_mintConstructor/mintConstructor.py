@@ -124,6 +124,11 @@ class Reconstructor:
         print ("Ready to work with " + self.isoFilename)
         # Copies the contents of the ISO file into self.customDir
         self.setupWorkingDirectory()
+
+        # Automatically umount /mnt/host
+        # Leaving /mnt/host mounted when it's not needed AND through the chroot process can prevent unmounting
+        # the chroot environment's /proc directory.  This prevents mksquashfs from working properly.
+        self.auto_umount()
         
         self.update_isolinux()
         
@@ -132,14 +137,25 @@ class Reconstructor:
         # chroot command is "chroot /usr/local/bin/swiftconstructor/custom_root/"
         self.goChroot()
                 
+        # Automatically mount /mnt/host
+        self.auto_mount()
+
         # Create the Output ISO file
         self.build()
+
+        # Automatically umount /mnt/host
+        self.auto_umount()
         
         self.finish() # End of program
 
 # Automatically mount /mnt/host
     def auto_mount(self):
         os.system ("mount -t vboxsf guest /mnt/host")
+        return
+
+# Automatically umount /mnt/host
+    def auto_umount(self):
+        os.system ("umount /mnt/host")
         return
         
 # Get the base ISO file
@@ -391,6 +407,9 @@ class Reconstructor:
             # (In some cases useful info about processes that use
             # the device is found by lsof(8) or fuser(1))
             # AS A RESULT, READ FAILS IN MKSQUASHFS PROCESS
+            os.system ('mount')
+            os.system ('fuser -v ' + os.path.join(self.customDir, "custom_root/proc/"))
+            
 
         except Exception, detail: # Not used in Swift Linux
             # restore settings
