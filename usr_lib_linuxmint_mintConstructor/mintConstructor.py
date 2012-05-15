@@ -370,7 +370,6 @@ class Reconstructor:
             # From earlier: self.chrootDir = self.customDir + '/custom_root'
             # From earlier: self.chrootPrefix = 'chroot '+self.chrootDir+' '
             
-            # Works with the following command deactivated
             os.system(self.chrootPrefix + 'python /usr/local/bin/develop/1-build/shared-regular.py')
             
             # Delete Swift Linux scripts from the chroot environment
@@ -505,7 +504,7 @@ class Reconstructor:
                 # Cannot stat dir/file /usr/local/bin/swiftconstructor/custom_root//proc/2815/task/2815/ns/net
                 print ('mksquashfs \"' + os.path.join(self.customDir, "custom_root") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" -comp xz >> /dev/null')
                 os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" -comp xz >> /dev/null')
-            else:
+            else: # Not true for Swift Linux
                 os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             os.system ('echo The mksquashfs process has now been completed.')
         
