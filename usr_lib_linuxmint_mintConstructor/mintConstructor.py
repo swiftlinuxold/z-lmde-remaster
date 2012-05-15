@@ -369,7 +369,8 @@ class Reconstructor:
             # Execute "chroot /usr/local/bin/swiftconstructor/custom_root" + command
             # From earlier: self.chrootDir = self.customDir + '/custom_root'
             # From earlier: self.chrootPrefix = 'chroot '+self.chrootDir+' '
-                    
+            
+            # Works with the following command deactivated
             os.system(self.chrootPrefix + 'python /usr/local/bin/develop/1-build/shared-regular.py')
             
             # Delete Swift Linux scripts from the chroot environment
@@ -499,10 +500,13 @@ class Reconstructor:
             # check for alternate mksquashfs
             os.system ('echo The mksquashfs process takes a LONG time.')
             os.system ('echo Please note that the screen output is suppressed due to overwhelming volume.')
-            if mksquashfs == '':                
-                os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" -comp xz >> /dev/null')
+            if mksquashfs == '': # True for Swift Linux
+                # NOTE: using 'custom_root/' in this section results in errors like:
+                # Cannot stat dir/file /usr/local/bin/swiftconstructor/custom_root//proc/2815/task/2815/ns/net
+                print ('mksquashfs \"' + os.path.join(self.customDir, "custom_root") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" -comp xz >> /dev/null')
+                os.system('mksquashfs \"' + os.path.join(self.customDir, "custom_root") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" -comp xz >> /dev/null')
             else:
-                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\" >> /dev/null')
+                os.system(mksquashfs + ' \"' + os.path.join(self.customDir, "custom_root/") + '\"' + ' \"' + os.path.join(self.customDir, "remaster/casper/filesystem.squashfs") + '\"')
             os.system ('echo The mksquashfs process has now been completed.')
         
         # 4B.  Update the md5sum values in md5sum.txt in /usr/local/bin/swiftconstructor/remaster
