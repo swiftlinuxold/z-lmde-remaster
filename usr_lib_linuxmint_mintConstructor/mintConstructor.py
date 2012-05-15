@@ -387,6 +387,10 @@ class Reconstructor:
             # umount /proc
             print _("Umounting /proc...")
             os.popen('umount \"' + os.path.join(self.customDir, "custom_root/proc/") + '\"')
+            # umount: /usr/local/bin/swiftconstructor/custom_root/proc: device is busy.
+            # (In some cases useful info about processes that use
+            # the device is found by lsof(8) or fuser(1))
+            # AS A RESULT, READ FAILS IN MKSQUASHFS PROCESS
 
         except Exception, detail: # Not used in Swift Linux
             # restore settings
