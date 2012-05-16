@@ -385,8 +385,14 @@ class Reconstructor:
             # Execute "chroot /usr/local/bin/swiftconstructor/custom_root" + command
             # From earlier: self.chrootDir = self.customDir + '/custom_root'
             # From earlier: self.chrootPrefix = 'chroot '+self.chrootDir+' '
+
+            os.system('echo OUTPUT of mount command, before executing Swift Linux scripts in chroot:')
+            os.system('mount')
             
             os.system(self.chrootPrefix + 'python /usr/local/bin/develop/1-build/shared-regular.py')
+
+            os.system('echo OUTPUT of mount command, after executing Swift Linux scripts in chroot:')
+            os.system('mount')
             
             # Delete Swift Linux scripts from the chroot environment
             self.deleteSwiftScripts()
@@ -400,15 +406,20 @@ class Reconstructor:
             # remove dns info
             print _("Removing DNS info...")
             os.popen('rm -Rf \"' + os.path.join(self.customDir, "custom_root/etc/resolv.conf") + '\"')
+
+            # umount /proc/sys/fs/binfmt_misc
+            # /proc/sys/fs/binfmt_misc within the chroot environment MUST be unmounted.
+            # Not unmounting this prevents unmounting /proc within the chroot environment.
+            # Not unmounting /proc within the chroot environment prevents the mksquashfs process
+            # from working properly.
+            print _("Umounting /proc/sys/fs/binfmt_misc...")
+            os.popen('umount \"' + os.path.join(self.customDir, "custom_root/proc/sys/fs/binfmt_misc") + '\"')
+
             # umount /proc
             print _("Umounting /proc...")
             os.popen('umount \"' + os.path.join(self.customDir, "custom_root/proc/") + '\"')
-            # umount: /usr/local/bin/swiftconstructor/custom_root/proc: device is busy.
-            # (In some cases useful info about processes that use
-            # the device is found by lsof(8) or fuser(1))
-            # AS A RESULT, READ FAILS IN MKSQUASHFS PROCESS
+            os.system('echo OUTPUT of mount command, at the end of the goChroot function:')
             os.system ('mount')
-            os.system ('fuser -v ' + os.path.join(self.customDir, "custom_root/proc/"))
             
 
         except Exception, detail: # Not used in Swift Linux
